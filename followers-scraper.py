@@ -1,4 +1,5 @@
 import time
+from random import randint
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -37,7 +38,7 @@ def prompt_credentials():
 
 def login(bot, username, password):
     bot.get('https://www.instagram.com/accounts/login/')
-    time.sleep(1)
+    time.sleep(randint(1, 5))
 
     # Check if cookies need to be accepted
     try:
@@ -70,18 +71,23 @@ def scrape_following(bot, username):
     time.sleep(3.5)
     WebDriverWait(bot, TIMEOUT).until(ec.presence_of_element_located(
         (By.XPATH, "//a[contains(@href, '/followers')]"))).click()  # for following accounts change to '/following'
-    time.sleep(2)
+    time.sleep(randint(2, 8))
 
     # scroll the pop-up window with accounts
-    scroll_box = bot.find_element(By.XPATH, '//div[@class="_aano"]')
-    time.sleep(2)
+    scroll_box = bot.find_element(By.XPATH, '//div[@class="xyi19xy x1ccrb07 xtf3nb5 x1pc53ja x1lliihq x1iyjqo2 xs83m0k xz65tgg x1rife3k x1n2onr6"]')
+    actions = ActionChains(bot)
+    time.sleep(5)
     last_ht, ht = 0, 1  # height variable
     while last_ht != ht:
         last_ht = ht
-        time.sleep(2)
+        time.sleep(randint(10, 20))
         ht = bot.execute_script("""
                 arguments[0].scrollTo(0, arguments[0].scrollHeight);
                 return arguments[0].scrollHeight; """, scroll_box)
+        time.sleep(randint(2, 8))
+
+        actions.move_to_element(scroll_box).perform()
+        time.sleep(5)
 
     users = set()
 
@@ -103,7 +109,7 @@ def scrape_following(bot, username):
 
     print(f"[Info] - Saving followers for {username}...")
     # append accounts to the existing file – followers.txt
-    with open(f'followers.txt', 'a') as file:
+    with open(f'{username}_followers.txt', 'a') as file:
         file.write('\n'.join(users) + "\n")
 
 
@@ -118,9 +124,9 @@ def scrape():
     usernames = input("Enter the Instagram usernames you want to scrape (separated by commas): ").split(",")
 
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     mobile_emulation = {
-        "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/90.0.1025.166 Mobile Safari/535.19"}
+        "userAgent": "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Mobile Safari/537.36"}
     options.add_experimental_option("mobileEmulation", mobile_emulation)
 
     bot = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
